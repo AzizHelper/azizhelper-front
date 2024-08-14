@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
@@ -17,6 +17,7 @@ import {
 } from "@/app/components/ui/form";
 import { Input } from "@/app/components/ui/input";
 import { Button } from "@/app/components/ui/button";
+import { setCookie } from "@/lib/utils";
 
 const LoginSchema = z.object({
   email: z.string().email({
@@ -41,16 +42,13 @@ const LoginForm = () => {
   const onSubmit = async (data: z.infer<typeof LoginSchema>) => {
     setLoading(true);
     try {
-      console.log(data)
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
-        data,
-        { withCredentials: true }
+        data
       );
-      
-      console.log(response);
       if (response.status === 200) {
         alert("تم تسجيل الدخول بنجاح.");
+        setCookie("token", response.data.token);
         router.push("/chat");
       }
     } catch (error) {

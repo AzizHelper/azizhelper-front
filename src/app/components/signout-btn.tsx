@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/app/components/ui/button";
+import { deleteCookie } from "@/lib/utils";
 
 export default function SignOutButton() {
   return (
@@ -8,9 +9,7 @@ export default function SignOutButton() {
       className="w-24"
       variant="destructive"
       onClick={() => {
-        fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`, {
-          method: "POST"
-        })
+        deleteCookie("token");
       }}
     >
       Signout

@@ -1,6 +1,35 @@
+"use client";
+import { useRouter } from "next/navigation";
 import ChatInput from "./input";
+import { isAuthenticated } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 export default function Chat() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      try {
+        const auth = await isAuthenticated();
+        if (!auth) {
+          router.push("/login");
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (typeof window !== "undefined") {
+      checkAuthentication();
+    }
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <div className="grow">
       <div className="flex flex-col items-start gap-4 pb-10 min-h-[75vh] sm:w-[95%]">

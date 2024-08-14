@@ -15,17 +15,19 @@ export default function ChatInput() {
     const message = formData.get("message") as string;
     if (!message) return;
 
-    if (!isAuthenticated) {
+    const authenticated = await isAuthenticated();
+    if (!authenticated) {
       router.push("/login");
       return;
     }
 
-    const { message: err } = await sendMessage({ message });
-    if (err) {
-      toast({
-        title: err,
+    const resMessage = await sendMessage({ message });
+    if (resMessage.responseMessage.status !== 200) {
+      return toast({
+        title: "An error occurred",
       });
     }
+    router.push(`/chat/${resMessage.chatId}`);
   }
 
   return (

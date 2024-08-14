@@ -1,7 +1,9 @@
-import { notFound } from "next/navigation";
+"use client";
+import { notFound, redirect } from "next/navigation";
 import Chat from "./chat";
 import axios from "axios";
-import { isAuthenticated } from "@/lib/utils";
+import { getCookie, isAuthenticated } from "@/lib/utils";
+import { useState, useEffect } from "react";
 
 type PageParams = {
   params: {
@@ -9,21 +11,49 @@ type PageParams = {
   };
 };
 
-export default async function ChatSpecificPage({ params: { id } }: PageParams) {
-  try {
-    const res = await axios.post(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/chat/getChat`,
-      {
-        chatId: id,
-      },
-      {
-        withCredentials: true,
+export default function ChatSpecificPage({ params: { id } }: PageParams) {
+  const [messages, setMessages] = useState<JSONMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const authenticated = await isAuthenticated();
+        if (!authenticated) {
+          return redirect("/login");
+        }
+        const res = await axios.post(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/chat/getChat`,
+          {
+            chatId: id,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${getCookie("token")}`,
+            },
+          }
+        );
+        if (res.status === 200) {
+          setMessages(res.data);
+        }
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setLoading(false);
       }
-    );
-    console.log(res.data);
-    if (!res) return notFound();
-    return <Chat id={id} messages={res.data} />;
-  } catch (err) {
-    console.log(err);
+    };
+    if (typeof window !== "undefined") {
+      fetchData();
+    }
+  }, [id]);
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
+
+  if (messages.length == 0) {
+    return <div>Conversation not found.</div>;
+  }
+
+  return <Chat id={id} messages={messages} />;
 }
