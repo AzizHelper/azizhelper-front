@@ -4,3 +4,8 @@ type JSONMessage = {
   _id: string;
   timestamp: Date;
 };
+
+type Chats = {
+  chatId: string;
+  chatName:  string;
+}

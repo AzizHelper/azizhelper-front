@@ -64,3 +64,4 @@ export function deleteCookie(name: string) {
   // Set it
   document.cookie = name+"=; expires="+date.toUTCString()+"; path=/";
 }
+

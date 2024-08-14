@@ -1,3 +1,4 @@
+"use client"
 import {
   Sheet,
   SheetContent,
@@ -6,9 +7,11 @@ import {
 } from "@/app/components/ui/sheet";
 import { PanelLeftIcon } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { buttonVariants } from "./ui/button";
 import { ScrollArea } from "./ui/scroll-area";
+import axios from "axios";
+import { getCookie } from "@/lib/utils";
 
 export default function LeftPanel() {
   return (
@@ -26,42 +29,53 @@ export default function LeftPanel() {
             fallback={
               <p className={buttonVariants({ variant: "link" })}>Loading...</p>
             }
-          ></Suspense>
+          >
+            <ConversationList />
+          </Suspense>
         </div>
       </SheetContent>
     </Sheet>
   );
 }
 
-// async function ConversationList() {
-//   const session = await getUser();
-//   if (!session?.user) return null;
-//   const res = await prisma.user.findUnique({
-//     where: {
-//       id: session.user.id,
-//     },
-//     include: {
-//       conversations: {
-//         orderBy: {
-//           createdAt: "desc",
-//         },
-//       },
-//     },
-//   });
+function ConversationList() {
+  const [chats, setChats] = useState<Chats[]>([]);
 
-// if (!res) return null;
-// const { conversations } = res;
-// return (
-//   <ScrollArea className="flex flex-col mt-7 items-start overflow-y-auto h-[90vh] pb-5">
-//     {conversations.map((cn) => (
-//       <SheetClose asChild key={cn.id}>
-//         <Link
-//           href={`/chat/${cn.id}`}
-//           className="w-full my-3 px-8 hover:underline underline-offset-2"
-//         >
-//           {cn.name.length > 35 ? cn.name.slice(0, 35) + "..." : cn.name}
-//         </Link>
-//       </SheetClose>
-//     ))}
-//   </ScrollArea>
-// );
+  useEffect(() => {
+    async function fetchChats() {
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/chat/getChats`,
+          {
+            headers: {
+              Authorization: `Bearer ${getCookie("token")}`,
+            },
+          }
+        );
+
+        if (res.status === 200) {
+          setChats(res.data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch chats:", error);
+      }
+    }
+
+    fetchChats();
+  }, []);
+
+  return (
+    <ScrollArea className="flex flex-col mt-7 items-start overflow-y-auto h-[90vh] pb-5">
+      {chats.map((chat: Chats) => (
+        <SheetClose asChild key={chat.chatId}>
+          <Link
+            href={`/chat/${chat.chatId}`}
+            className="w-full my-3 px-8 hover:underline underline-offset-2"
+          >
+            {chat.chatName.length > 35 ? chat.chatName.slice(0, 35) + "..." : chat.chatName}
+          </Link>
+        </SheetClose>
+      ))}
+    </ScrollArea>
+  );
+}
