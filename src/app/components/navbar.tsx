@@ -2,7 +2,6 @@ import Link from "next/link";
 import { buttonVariants } from "./ui/button";
 import ToggleTheme from "./toggle";
 import { NamedLogoWithLink } from "./logo";
-import Profile from "./profile";
 import { SquarePen } from "lucide-react";
 
 const btnVariant = buttonVariants({
@@ -22,7 +21,6 @@ export default function Navbar() {
             <SquarePen className="w-5 h-5 sm:hidden flex" />
             <span className="sm:flex hidden">محادثة جديدة</span>
           </Link>
-          <Profile />
         </div>
       </div>
     </nav>
